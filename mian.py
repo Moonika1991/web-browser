@@ -31,6 +31,7 @@ class App(QFrame):
         #Create Tabs
         self.tabbar = QTabBar(movable=True, tabsClosable=True)
         self.tabbar.tabCloseRequested.connect(self.CloseTab)
+        self.tabbar.tabBarClicked.connect(self.SwitchTab)
 
         self.tabbar.setCurrentIndex(0)
 
@@ -48,6 +49,9 @@ class App(QFrame):
 
         #New tab button
         self.AddTabButton = QPushButton("+")
+
+        self.addressbar.returnPressed.connect(self.BrowseTo())
+
         self.AddTabButton.clicked.connect(self.AddTab)
 
         self.ToolbarLayout.addWidget(self.AddTabButton)
@@ -95,6 +99,19 @@ class App(QFrame):
         self.tabbar.addTab("New Tab")
         self.tabbar.setTabData(i, "tab" + str(i))
         self.tabbar.setCurrentIndex(i)
+
+        self.tabCount += 1
+
+    def SwitchTab(self, i):
+        tab_data = self.tabbar.tabData(i)
+        print("tab:", tab_data)
+
+        tab_content = self.container.findChild(QWidget, tab_data)
+        self.container.layout.setCurrentWidget(tab_content)
+
+    def BrowseTo(self):
+        text = self.addressbar
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
