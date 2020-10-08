@@ -83,6 +83,8 @@ class App(QFrame):
         self.tabs[i].content = QWebEngineView()
         self.tabs[i].content.load(QUrl.fromUserInput("http://google.com"))
 
+        self.tabs[i].content.titleChanged.connect(lambda: self.settabtext(i))
+
         #Add webview to tabs layout
         self.tabs[i].layout.addWidget(self.tabs[i].content)
 
@@ -95,24 +97,24 @@ class App(QFrame):
 
         #Set the tab at top of screen
         self.tabbar.addTab("New Tab")
-        self.tabbar.setTabData(i, "tab" + str(i))
+        self.tabbar.setTabData(i, {"object": "tab" + str(i), "initial": i})
+
+        print("td: ", self.tabbar.tabData(i)["object"])
         self.tabbar.setCurrentIndex(i)
 
         self.tabCount += 1
 
     def switchtab(self, i):
         tab_data = self.tabbar.tabData(i)
-        print("tab:", tab_data)
 
-        tab_content = self.container.findChild(QWidget, tab_data)
+        tab_content = self.container.findChild(QWidget, tab_data["object"])
         self.container.layout.setCurrentWidget(tab_content)
 
     def browseto(self):
         text = self.addressbar.text()
-        print(text)
 
         i = self.tabbar.currentIndex()
-        tab = self.tabbar.tabData(i)
+        tab = self.tabbar.tabData(i)["object"]
         wv = self.findChild(QWidget, tab).content
 
         if "http" not in text:
@@ -122,8 +124,28 @@ class App(QFrame):
                 url = "http://" + text
         else:
             url = text
-
+            
         wv.load(QUrl.fromUserInput(url))
+
+    def settabtext(self, i):
+        tab_name = self.tabs[i].objectName()
+
+        count = 0
+        running = True
+
+        while running:
+            tab_data_name = self.tabbar.tabData(count)
+
+            if count >= 99:
+                running = False
+
+            if tab_name == tab_data_name["object"]:
+                newTitle = self.findChild(QWidget, tab_name).content.title()
+                self.tabbar.setTabText(count, newTitle)
+                running = False
+            else:
+                count += 1
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
